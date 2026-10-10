@@ -1,0 +1,11 @@
+{
+  "appId": "com.bactrack.app",
+  "appName": "BacTrack",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
