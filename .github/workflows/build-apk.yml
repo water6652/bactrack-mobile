@@ -27,7 +27,7 @@ jobs:
         run: npx cap add android || true
 
       - name: Generate app assets
-        run: npx cap-assets generate --android
+        run: npx @capacitor/assets generate --android
 
       - name: Sync web assets into the Android project
         run: npx cap sync android
