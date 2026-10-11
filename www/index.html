@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BacTrack · v7.4.2 (apk) -->
+<!-- BacTrack · v7.4.3 (apk) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -3362,6 +3362,25 @@ function renderQaThumbs(){
     wrap.appendChild(th);
   });
 }
+/* v7.4.3: inside the Android app the camera comes from Capacitor's Camera plugin (it asks for the
+   permission and opens the real camera). The WebView's file input could only open the gallery.
+   In a normal browser it still uses the <input capture> route. Failures are shown, never silent. */
+async function takePhoto(){
+  const C=window.Capacitor, cam=C && C.Plugins && C.Plugins.Camera;
+  if(cam && C.isNativePlatform && C.isNativePlatform()){
+    try{
+      const ph=await cam.getPhoto({quality:90,resultType:"uri",source:"CAMERA",correctOrientation:true,saveToGallery:false});
+      const blob=await (await fetch(ph.webPath)).blob();
+      handlePhotoPick([new File([blob],"camera-"+Date.now()+".jpg",{type:blob.type||"image/jpeg"})]);
+    }catch(e){
+      const m=String((e&&e.message)||e);
+      if(/cancel/i.test(m)) return;            // the person backed out of the camera
+      toast("Camera problem: "+m.slice(0,90));
+    }
+    return;
+  }
+  const inp=$("#photoCamInput"); inp.value=""; inp.click();
+}
 function handlePhotoPick(files){
   const list=Array.from(files||[]);
   if(!list.length) return;
@@ -3395,9 +3414,7 @@ function handlePhotoPick(files){
  $("#qaCamBtn").addEventListener("click",e=>{
   e.stopPropagation();
   photoPickTarget="qa";
-  const inp=$("#photoCamInput");
-  inp.value="";
-  inp.click();
+  takePhoto();
 });
  $("#qaGalBtn").addEventListener("click",e=>{
   e.stopPropagation();
@@ -3886,7 +3903,7 @@ function registerDevice(force){
   const now=Date.now();
   if(!force && now-devBeat<10*60*1000) return;
   devBeat=now;
-  const body={lastSeen:now, ua:(navigator.userAgent||"").slice(0,180), app:"7.4.2"};
+  const body={lastSeen:now, ua:(navigator.userAgent||"").slice(0,180), app:"7.4.3"};
   let named=false; try{ named=!!localStorage.getItem(DEVICE_NAMED_KEY); }catch(e){}
   if(!named){ body.name=guessDeviceName(); body.firstSeen=now; }
   netTrack(devicesCol().doc(deviceId()).set(body,{merge:true}))
@@ -3951,7 +3968,7 @@ document.addEventListener("load",e=>{
 
 /* ---- Backup ---- */
 function backupObject(){
-  return {app:"BacTrack",version:"7.4.2",exportedAt:new Date().toISOString(),
+  return {app:"BacTrack",version:"7.4.3",exportedAt:new Date().toISOString(),
     settings:State.settings,taxonomy:State.taxonomy,schedule:State.schedule,todos:State.todos};
 }
 function downloadBackup(){
@@ -4421,7 +4438,7 @@ function renderSettings(){
   // ---- About ----
   sec=section(host,"About","about");
   const al=el("div","sect-list");
-  [["Version","BacTrack 7.4.2"],["Photo server",R2_CONFIGURED?photoHost():"Not set"],["This device",guessDeviceName()],["Signed in as",fsUser?(fsUser.email||"—"):"Nobody"]].forEach(r=>{
+  [["Version","BacTrack 7.4.3"],["Photo server",R2_CONFIGURED?photoHost():"Not set"],["This device",guessDeviceName()],["Signed in as",fsUser?(fsUser.email||"—"):"Nobody"]].forEach(r=>{
     const it=el("div","item"); const m=el("div","item-main");
     m.appendChild(el("div","item-d",r[0])); m.appendChild(el("div","item-t",r[1])); it.appendChild(m); al.appendChild(it);
   });
@@ -4775,9 +4792,7 @@ function fillTaskDetail(t, arch){
   cam.addEventListener("click",e=>{
     e.stopPropagation();
     photoPickTarget={task:t, arch:!!arch};
-    const inp=$("#photoCamInput");
-    inp.value="";
-    inp.click();
+    takePhoto();
   });
   icons.appendChild(cam);
   const db=el("button","td-icon danger"); db.title="Delete";
