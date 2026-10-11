@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- BacTrack · v7.4.1 (apk) -->
+<!-- BacTrack · v7.4.2 (apk) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -247,7 +247,7 @@ button{cursor:pointer;}
 .cal-nav button{padding:5px 11px; font-size:.78rem; color:var(--fg-mid); border-radius:var(--radius);}
 .cal-nav button:hover{background:var(--field);}
 
-.cal-grid{display:flex; flex-direction:column; flex:1 1 auto; min-height:0;}
+.cal-grid{display:flex; flex-direction:column; flex:1 1 auto; min-height:0; overflow:hidden;}
 .tg-head{display:grid; grid-template-columns:44px repeat(7,1fr); flex:0 0 auto; border-bottom:1px solid var(--line); padding-bottom:8px;}
 .tg-headcell{text-align:center; padding-top:2px;}
 .tg-headcell .cd-name{font-size:.68rem; color:var(--fg-soft); letter-spacing:.05em; display:block;}
@@ -255,7 +255,7 @@ button{cursor:pointer;}
 .tg-headcell.today .cd-name{color:var(--fg); font-weight:500;}
 .tg-headcell.today .cd-num{color:var(--fg); font-weight:500;}
 .tg-headcell{position:relative;}
-.tg-scroll{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; touch-action:pan-y; overscroll-behavior:contain;}
+.tg-scroll{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; touch-action:pan-x pan-y; overscroll-behavior:contain;}
 .tg-inner{display:grid; grid-template-columns:44px repeat(7,1fr); position:relative;}
 .tg-hourlabels{display:flex; flex-direction:column;}
 .tg-hourlabel{font-size:.6rem; color:var(--fg-faint); text-align:right; padding-right:8px; position:relative; top:-6px; white-space:nowrap;}
@@ -320,7 +320,7 @@ button{cursor:pointer;}
 .scrim.on{opacity:1; pointer-events:auto;}
 
 .sheet{
-  position:fixed; left:50%; bottom:0; width:min(520px,100%); max-height:92vh; z-index:70;
+  position:fixed; left:50%; bottom:0; width:min(520px,100%); max-height:92vh; z-index:76;
   background:var(--bg); border-radius:18px 18px 0 0;
   border:1px solid var(--line); border-bottom:none;
   transform:translate(-50%,102%);
@@ -396,8 +396,10 @@ button{cursor:pointer;}
 .st-rv{flex:0 1 auto; max-width:42%; font-size:.78rem; color:var(--fg-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .st-chev{flex:0 0 auto; width:7px; height:7px; border-right:1.5px solid var(--fg-faint); border-top:1.5px solid var(--fg-faint); transform:rotate(45deg); margin:0 3px 0 2px;}
 .st-profile:focus-visible,.st-row:focus-visible,.item-btn:focus-visible,.btn:focus-visible{outline:2px solid var(--fg-faint); outline-offset:2px;}
-:root[data-theme="dark"] .st-ico-img, :root[data-gradient-night="1"] .st-ico-img{filter:invert(1);}
-@media (prefers-color-scheme: dark){ :root:not([data-theme]) .st-ico-img{filter:invert(1);} }
+:root[data-theme="dark"] .st-ico-img, :root[data-gradient-night="1"] .st-ico-img,
+:root[data-theme="dark"] .wz-icon, :root[data-gradient-night="1"] .wz-icon,
+:root[data-theme="dark"] .au-icon, :root[data-gradient-night="1"] .au-icon{filter:invert(1);}
+@media (prefers-color-scheme: dark){ :root:not([data-theme]) .st-ico-img, :root:not([data-theme]) .wz-icon, :root:not([data-theme]) .au-icon{filter:invert(1);} }
 .pq-h{font-size:.72rem; color:var(--fg-soft); letter-spacing:.06em; margin:2px 0 8px;}
 .pq-sum,.pq-empty{font-size:.8rem; color:var(--fg-soft);}
 .pq-item{align-items:center;}
@@ -412,6 +414,14 @@ button{cursor:pointer;}
 .td-photo img.loaded,.pv-thumb img.loaded{opacity:1;}
 .item-btn:active,.chip:active{transform:scale(.94);}
 .pill-extra{white-space:nowrap;}
+.extra-toggle{display:block; margin:12px auto 4px; padding:6px 12px; font-size:.74rem; color:var(--fg-soft); letter-spacing:.02em; transition:color calc(.2s * var(--speed)) var(--ease);}
+.extra-toggle:hover{color:var(--fg);}
+.extra-wrap{display:grid; grid-template-rows:0fr; opacity:0; visibility:hidden;
+  transition:grid-template-rows calc(.38s * var(--speed)) var(--ease), opacity calc(.3s * var(--speed)) var(--ease), visibility 0s linear calc(.38s * var(--speed));}
+.extra-wrap.open{grid-template-rows:1fr; opacity:1; visibility:visible; transition-delay:0s;}
+.extra-inner{overflow:hidden; min-height:0;}
+/* v7.4.2: a sheet opened from Settings dims the panel too and sits above it */
+body:has(#stPanel.on):has(#edSheet.on) #scrim{z-index:72;}
 button{-webkit-tap-highlight-color:transparent;}
 
 
@@ -814,6 +824,8 @@ html[data-animations="off"] .tr-clock.pulse{animation:none;}
   font-size:.82rem; color:var(--fg-mid); border-radius:7px;}
 .cal-menu button:hover{background:var(--field); color:var(--fg);}
 .cal-menu button.danger{color:var(--accent);}
+.cal-menu.row{display:flex; gap:2px; min-width:0; padding:3px;}
+.cal-menu.row button{width:auto; white-space:nowrap; padding:8px 12px; font-size:.78rem;}
 .tg-addmore{position:absolute; left:3px; right:3px; border-radius:6px;
   border:1.5px dashed var(--fg-faint); color:var(--fg-soft);
   font-size:.66rem; padding:6px 8px; text-align:center;
@@ -2046,8 +2058,10 @@ function todosOn(dateStr){ return todosArray().filter(t=>t.due===dateStr); }
 /* v7.4.1 ADDITIONAL TASKS — anything due after today is listed under the day's real tasks with
    a blue pill. Skipping it never archives it (the sweep only looks at due dates in the past),
    and it turns into a normal task the evening before it is due. */
+let extraOpen=false;   // v7.4.2: always starts collapsed, even after a refresh (memory only, never saved)
 function isAdditional(t,now){
   if(!t || !t.due) return false;
+  if(t.seriesId) return false;   // v7.4.2: repeating / spaced tasks are never "additional"
   now=now||new Date();
   if(t.due<=iso(now)) return false;
   const h=State.settings.additionalNight==null?20:State.settings.additionalNight;
@@ -2379,9 +2393,19 @@ function renderSlot(){
     $("#slotRight").textContent = [open?open+" open":"", openExtra?openExtra+" extra":""].filter(Boolean).join(" · ");
     $("#rapidBtn").hidden = open===0;
     if(!list.length){ body.appendChild(emptyState("Nothing queued.","Swipe up to add a task.")); return; }
-    if(!normal.length) body.appendChild(emptyState("Nothing due today.","Your extra tasks are below."));
+    if(!normal.length) body.appendChild(emptyState("Nothing due today.","Additional tasks are tucked away below."));
     sortTodos(normal).forEach(t=> body.appendChild(todoRow(t)));
-    sortTodos(extra).forEach(t=> body.appendChild(todoRow(t)));   // bottom of the list
+    if(extra.length){
+      const wrap=el("div","extra-wrap"+(extraOpen?" open":""));
+      const inner=el("div","extra-inner"); wrap.appendChild(inner);
+      sortTodos(extra).forEach(t=> inner.appendChild(todoRow(t)));
+      const tog=el("button","extra-toggle"); tog.type="button";
+      const lab=()=> extraOpen ? "Hide additional tasks" : "Show additional tasks ("+extra.length+")";
+      tog.textContent=lab();
+      // toggles in place: no re-render, so the animation plays once and sync repaints don't reset it
+      tog.addEventListener("click",()=>{ extraOpen=!extraOpen; wrap.classList.toggle("open",extraOpen); tog.textContent=lab(); });
+      body.appendChild(tog); body.appendChild(wrap);
+    }
     return;
   }
   const isM = mode==="morning";
@@ -2522,6 +2546,8 @@ function renderCalendar(){
   }
   grid.appendChild(head);
   const scroll=el("div","tg-scroll");
+  // v7.4.2: the day header lives outside the scroller, so it follows sideways scrolling by hand
+  scroll.addEventListener("scroll",()=>{ head.style.transform="translateX("+(-scroll.scrollLeft)+"px)"; },{passive:true});
   const inner=el("div","tg-inner");
   const hourCol=el("div","tg-hourlabels");
   for(let h=TG_START_HOUR;h<TG_END_HOUR;h++){
@@ -2758,11 +2784,11 @@ window.addEventListener("touchstart", e=>{
   touchActive=true; lastTouchAt=Date.now();
   if(e.touches.length!==1) return;
   const t=e.touches[0];
-  tStart={x:t.clientX,y:t.clientY,time:Date.now()};
+  tStart={x:t.clientX,y:t.clientY,time:Date.now(),noNav:!!(e.target.closest && e.target.closest("#calGrid .tg-scroll"))};
   tMoved=false;
   clearTimeout(pressTimer);
   const tgt=e.target;
-  pressTimer=setTimeout(()=>{ if(!tMoved && !tgt.closest(".sheet,.panel,#taskDetail,#rfOverlay,#taskRun,#archiveScreen,#statsScreen,#wizard,#gate,#editbar,#tut,.cal-menu,#photoView,input,textarea,select")) toggleEdit(); },600);
+  pressTimer=setTimeout(()=>{ if(!tMoved && !tgt.closest(".sheet,.panel,#taskDetail,#rfOverlay,#taskRun,#archiveScreen,#statsScreen,#wizard,#gate,#editbar,#tut,.cal-menu,#photoView,input,textarea,select") && !(editMode && tgt.closest(".tg-block,.tg-task"))) toggleEdit(); },600);
 },{passive:true});
 window.addEventListener("touchmove", e=>{
   if(!tStart) return;
@@ -2776,7 +2802,9 @@ window.addEventListener("touchend", e=>{
   if(!tStart || sheetOpen() || overlayOpen() || CALSEL.menu || !$("#photoView").hidden){ tStart=null; return; }
   const t=e.changedTouches[0];
   const dx=t.clientX-tStart.x, dy=t.clientY-tStart.y, dt=Date.now()-tStart.time;
+  const noNav=tStart.noNav;
   tStart=null;
+  if(noNav) return;
   if(dt>700) return;
   if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.4){ navStep(dx<0?1:-1); return; }
   if(dy<-70 && Math.abs(dy)>Math.abs(dx)*1.4 && ORDER()[screenIdx]==="home"){ openQuickAdd(); }
@@ -2899,7 +2927,7 @@ function closeAll(){
     if((inSheet && !inSheet.classList.contains("on")) || (ae.closest("#stPanel") && !$("#stPanel").classList.contains("on"))) ae.blur();
   }
 }
- $("#scrim").addEventListener("click",()=>{ if(qaHasDraft()) closeQuickAdd(); else closeAll(); });
+ $("#scrim").addEventListener("click",()=>{ if($("#edSheet").classList.contains("on")){ closeEditor(); return; } if(qaHasDraft()) closeQuickAdd(); else closeAll(); });
 
 /* ---- quick add ---- */
 function fillSelect(sel,list,val){
@@ -3858,7 +3886,7 @@ function registerDevice(force){
   const now=Date.now();
   if(!force && now-devBeat<10*60*1000) return;
   devBeat=now;
-  const body={lastSeen:now, ua:(navigator.userAgent||"").slice(0,180), app:"7.4.1"};
+  const body={lastSeen:now, ua:(navigator.userAgent||"").slice(0,180), app:"7.4.2"};
   let named=false; try{ named=!!localStorage.getItem(DEVICE_NAMED_KEY); }catch(e){}
   if(!named){ body.name=guessDeviceName(); body.firstSeen=now; }
   netTrack(devicesCol().doc(deviceId()).set(body,{merge:true}))
@@ -3923,7 +3951,7 @@ document.addEventListener("load",e=>{
 
 /* ---- Backup ---- */
 function backupObject(){
-  return {app:"BacTrack",version:"7.4.1",exportedAt:new Date().toISOString(),
+  return {app:"BacTrack",version:"7.4.2",exportedAt:new Date().toISOString(),
     settings:State.settings,taxonomy:State.taxonomy,schedule:State.schedule,todos:State.todos};
 }
 function downloadBackup(){
@@ -4283,7 +4311,7 @@ function renderSettings(){
   bindInput(field(sec,"Upcoming tasks become normal at","select",String(s.additionalNight==null?20:s.additionalNight),
     [18,19,20,21,22].map(h=>({id:String(h),name:fmtHourMin(h,0)+" the evening before"}))),
     v=>{ s.additionalNight=Number(v); pushConfig("settings"); renderAll(); });
-  hint(sec,"Tasks due after today sit at the bottom of the list as additional tasks. Skipping them never archives them, and they only count toward the day they are due.");
+  hint(sec,"Tasks you scheduled in advance (not repeating ones) are tucked under \"Show additional tasks\" until the day they are due. Skipping them never archives them, and they only count toward the day they are due.");
   sec=section(host,"Reminder line","reminder");
   sw(sec,"Show it","The line along the bottom of the screen.",s.reminderOn,
     v=>{ s.reminderOn=v; pushConfig("settings"); renderTicker(); });
@@ -4393,7 +4421,7 @@ function renderSettings(){
   // ---- About ----
   sec=section(host,"About","about");
   const al=el("div","sect-list");
-  [["Version","BacTrack 7.4.1"],["Photo server",R2_CONFIGURED?photoHost():"Not set"],["This device",guessDeviceName()],["Signed in as",fsUser?(fsUser.email||"—"):"Nobody"]].forEach(r=>{
+  [["Version","BacTrack 7.4.2"],["Photo server",R2_CONFIGURED?photoHost():"Not set"],["This device",guessDeviceName()],["Signed in as",fsUser?(fsUser.email||"—"):"Nobody"]].forEach(r=>{
     const it=el("div","item"); const m=el("div","item-main");
     m.appendChild(el("div","item-d",r[0])); m.appendChild(el("div","item-t",r[1])); it.appendChild(m); al.appendChild(it);
   });
@@ -4782,10 +4810,21 @@ function openPhotoView(t, idx, sourceEl){
   requestAnimationFrame(()=>{ v.classList.add("on"); });
   pvPaint();
 }
+function pvZoomReset(){
+  const st=$("#pvStage");
+  st.dataset.z=1; st.dataset.x=0; st.dataset.y=0;
+  const img=st.querySelector("img"); if(img) img.style.transform="";
+}
+function pvApplyZoom(){
+  const st=$("#pvStage"), img=st.querySelector("img"); if(!img) return;
+  img.style.transform="translate("+st.dataset.x+"px,"+st.dataset.y+"px) scale("+st.dataset.z+")";
+  img.style.cursor=st.dataset.z>1?"grab":"";
+}
 function pvPaint(){
   const t=PV.t;
   const stage=$("#pvStage");
   stage.innerHTML="";
+  pvZoomReset();
   if(!t || !t.photos || !t.photos.length) return;
   const p=t.photos[PV.i];
   const img=el("img"); img.alt="";
@@ -4813,6 +4852,35 @@ function pvPaint(){
   $("#pvPrev").style.display = t.photos.length>1 ? "" : "none";
   $("#pvNext").style.display = t.photos.length>1 ? "" : "none";
 }
+// scroll wheel to zoom, left-click drag to pan
+(function(){
+  const st=$("#pvStage");
+  st.style.overflow="hidden";
+  st.addEventListener("wheel",e=>{
+    const img=st.querySelector("img"); if(!img) return;
+    e.preventDefault();
+    let z=parseFloat(st.dataset.z||1);
+    z=Math.min(6,Math.max(1,z-e.deltaY*0.0015*z*6));
+    st.dataset.z=z;
+    if(z<=1){ st.dataset.x=0; st.dataset.y=0; }
+    pvApplyZoom();
+  },{passive:false});
+  let dragging=false,lx=0,ly=0;
+  st.addEventListener("mousedown",e=>{
+    if(e.button!==0) return;
+    const img=st.querySelector("img"); if(!img || parseFloat(st.dataset.z||1)<=1) return;
+    dragging=true; lx=e.clientX; ly=e.clientY; img.style.cursor="grabbing"; e.preventDefault(); e.stopPropagation();
+  },true);
+  window.addEventListener("mousemove",e=>{
+    if(!dragging) return;
+    st.dataset.x=parseFloat(st.dataset.x||0)+(e.clientX-lx);
+    st.dataset.y=parseFloat(st.dataset.y||0)+(e.clientY-ly);
+    lx=e.clientX; ly=e.clientY;
+    pvApplyZoom();
+  });
+  window.addEventListener("mouseup",()=>{ dragging=false; const img=st.querySelector("img"); if(img) img.style.cursor=parseFloat(st.dataset.z||1)>1?"grab":""; });
+  st.addEventListener("dblclick",()=>{ st.dataset.z=1; st.dataset.x=0; st.dataset.y=0; pvApplyZoom(); });
+})();
 function pvAnimateFrom(){
   const img=$("#pvStage img"), src=PV.srcEl;
   if(!img || !src || !State.settings.animations) return;
@@ -6168,11 +6236,14 @@ function calToggleEntry(blk){
   CALSEL.active=CALSEL.entries.size>0;
   if(CALSEL.active){
     const r=blk.getBoundingClientRect();
-    showCalMenu(r.left, r.bottom+6);
+    showCalMenu(r.left, r.bottom+6, r);
   }else hideCalMenu();
 }
-function showCalMenu(x,y){
+function showCalMenu(x,y,anchor){
   hideCalMenu();
+  // v7.4.2: on touch screens the menu is a compact row that sits ABOVE the entry you just picked,
+  // so it never covers the neighbouring entries you still want to tap.
+  const compact=!!anchor && window.matchMedia("(pointer:coarse)").matches;
   const entries=[...CALSEL.entries.values()];
   const hasSess=entries.some(e=>e.type==="session");
   const menu=el("div","cal-menu");
@@ -6183,14 +6254,24 @@ function showCalMenu(x,y){
     menu.appendChild(b);
   };
   if(hasSess){
-    mk("Delete for the week","danger",calDeleteForWeek);
-    mk("Delete everywhere",null,calDeleteEverywhere);
+    mk(compact?"Delete week":"Delete for the week","danger",calDeleteForWeek);
+    mk(compact?"Delete all":"Delete everywhere",null,calDeleteEverywhere);
   }else mk("Delete","danger",calDeleteForWeek);
   mk("Cancel",null,()=>calSelClear());
   document.body.appendChild(menu);
   const z=bodyZoom();
   const mw=menu.offsetWidth, mh=menu.offsetHeight;
   const vw=window.innerWidth/z, vh=window.innerHeight/z;
+  if(compact){
+    menu.classList.add("row");
+    const cw=menu.offsetWidth, ch=menu.offsetHeight;
+    let top=anchor.top-ch-6; if(top<8) top=anchor.bottom+6;
+    const left=anchor.left+anchor.width/2-cw/2;
+    menu.style.left=clamp(left/z,8,Math.max(8,vw-cw-8))+"px";
+    menu.style.top=clamp(top/z,8,Math.max(8,vh-ch-8))+"px";
+    CALSEL.menu=menu;
+    return;
+  }
   menu.style.left=clamp((x+8)/z,8,Math.max(8,vw-mw-8))+"px";
   menu.style.top=clamp((y+8)/z,8,Math.max(8,vh-mh-8))+"px";
   CALSEL.menu=menu;
